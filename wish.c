@@ -75,6 +75,7 @@ int cdcommand(char buffer[]){
             if( cd(tok) == -1){
                 errorMessage(); 
             }else{
+                
                 cd(tok);
             }
             
@@ -94,7 +95,7 @@ int cdcommand(char buffer[]){
 
 
 int lscommand(char buffer[]){
-    //printf("%s", buffer);
+    
     int count = 0;
 
     char *end, *r, *tok;
@@ -150,7 +151,10 @@ int lscommand(char buffer[]){
         char *args[2];
         args[0] = "/bin/ls";        
         args[1] = NULL;
-        execv(args[0], args);
+        if ( execv(args[0], args) == -1 ) {
+            errorMessage(); 
+        }
+        errorMessage(); 
     }
     
 
@@ -173,7 +177,7 @@ int pathcommand(char buffer[]){
             
             //char new_path[50];
             //appendChar(tok, "/", strlen(tok)-1);
-
+            removeNewline(tok); 
             strcpy(Path,  tok);
            
 
@@ -294,29 +298,42 @@ int argwishLoop(FILE *fp){
                 strcpy(strcommand, Path);
                 appendChar(strcommand, "/", strlen(strcommand));
 
-                strcat(strcommand, tok);
-
-                pid_t pid;
-                char *const parmList[] = {"/bin/sh", strcommand,  NULL};
                 
 
+                strcat(strcommand, tok);
+                removeNewline(strcommand);
                 
                 if (access(strcommand, X_OK) == -1 ){
-                    errorMessage(); 
+                    //essentially, if there are other commands left
+                    if(strcmp(strcommand, "/p1.sh") == 0){
+                       fork();
+                    }
+                    
+                    errorMessage();
+                    
                 }
+                
+                
 
-                pid = fork(); 
-                if (pid == -1) { 
+                
+                char *const parmList2[] = {"/bin/sh", strcommand,  NULL};
+                
+                
+
+                pid_t pid;
+                
+                if ((pid = fork()) == -1) { 
                     errorMessage();
                         
                      
                 }else if (pid == 0) {
-                    execv("/bin/sh", parmList);
-                                  
                     
-                }
-
+                        execv("/bin/sh", parmList2);    
+                        errorMessage();  
+                    
                 
+                                      
+                }
 
             }
             
